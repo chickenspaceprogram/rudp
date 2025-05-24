@@ -5,12 +5,13 @@
 
 .PHONY: rel dbg asan wipe clean make
 
-DEBUG="-DCMAKE_BUILD_TYPE=Debug"
-RELEASE="-DCMAKE_BUILD_TYPE=Release"
-STATIC_TOOLS="-DRUDP_CLANG_TIDY=ON -DRUDP_CPPCHECK=ON"
-ASAN="-DRUDP_USE_ASAN=ON"
+DEBUG=-DCMAKE_BUILD_TYPE=Debug
+RELEASE=-DCMAKE_BUILD_TYPE=Release
+STATIC_TOOLS=-DRUDP_CLANG_TIDY=ON -DRUDP_CPPCHECK=ON
+TESTS=-DRUDP_TESTS=ON
+ASAN=-DRUDP_USE_ASAN=ON
 SENTINEL=build_sentinel
-THREADS="-j8"
+THREADS=-j8
 
 # this is a makefile i have to shorten the commands I have to type
 
@@ -20,19 +21,19 @@ make: $(SENTINEL)
 
 rel: wipe
 	: 'rel'
-	cmake -B build $(RELEASE) $(STATIC_TOOLS)
+	cmake -B build $(RELEASE) $(TESTS) $(STATIC_TOOLS)
 	touch $(SENTINEL)
 	cmake --build build $(THREADS)
 
 dbg: wipe
 	: 'dbg'
-	cmake -B build $(DEBUG) $(STATIC_TOOLS)
+	cmake -B build $(DEBUG) $(TESTS) $(STATIC_TOOLS)
 	touch $(SENTINEL)
 	cmake --build build $(THREADS)
 
 asan: wipe
 	: 'asan'
-	cmake -B build $(DEBUG) $(STATIC_TOOLS) $(ASAN)
+	cmake -B build $(DEBUG) $(TESTS) $(STATIC_TOOLS) $(ASAN)
 	touch $(SENTINEL)
 	cmake --build build $(THREADS)
 
@@ -47,7 +48,7 @@ clean:
 
 $(SENTINEL):
 	: '$(SENTINEL)'
-	cmake -B build $(DEBUG) $(STATIC_TOOLS)
+	cmake -B build $(DEBUG) $(TESTS) $(STATIC_TOOLS)
 	touch $(SENTINEL)
 
 

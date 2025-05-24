@@ -3,26 +3,33 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 project(user_rudp C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+include(CTest)
 
 # this file does kinda suck but it also does work and i can't be bothered to make it decent
 
-if(DEFINED RUDP_USE_ASAN AND RUDP_USE_ASAN)
+option(RUDP_USE_ASAN "Links rudp and any of its tests with the ASAN library.")
+option(RUDP_DEBUG "Builds a debug version of rudp and adds extra GCC/Clang-specific compiler flags.")
+option(RUDP_CPPCHECK "Uses the cppcheck tool to statically analyze source code when building.")
+option(RUDP_CLANG_TIDY "Uses the clang-tidy tool to statically analyze source code when building.")
+option(RUDP_TESTS "Builds rudp's unit tests.")
+
+if(RUDP_USE_ASAN)
 	message(NOTICE "Option `RUDP_USE_ASAN` specified. Linking ASAN and setting `RUDP_DEBUG`.")
 	set(CMAKE_CXX_FLAGS "-fsanitize=address -fsanitize-recover=address -fsanitize=undefined -fsanitize=leak")
 	set(RUDP_DEBUG ON)
 endif()
 
-if (DEFINED RUDP_DEBUG AND RUDP_DEBUG)
+if (RUDP_DEBUG)
 	message(NOTICE "Option `RUDP_DEBUG` specified. Building for debug and adding extra compile flags.")
 	set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -Werror")
 	set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-if (DEFINED RUDP_CPPCHECK AND RUDP_CPPCHECK)
+if (RUDP_CPPCHECK)
 	find_program(CPPCHECK cppcheck)
 	if (CPPCHECK)
 		message(NOTICE "Found cppcheck!")
@@ -37,7 +44,7 @@ if (DEFINED RUDP_CPPCHECK AND RUDP_CPPCHECK)
 	endif()
 endif()
 
-if (DEFINED RUDP_CLANG_TIDY AND RUDP_CLANG_TIDY)
+if (RUDP_CLANG_TIDY)
 	find_program(CLANG_TIDY clang-tidy)
 	if (CLANG_TIDY)
 		message(NOTICE "Found clang-tidy!")
@@ -50,5 +57,24 @@ if (DEFINED RUDP_CLANG_TIDY AND RUDP_CLANG_TIDY)
 	endif()
 endif()
 
+
+
+function(make_test testfilename) # can take libs to link as an optional arg
+if (RUDP_TESTS)
+	get_filename_component(EXENAME ${testfilename} NAME_WLE)
+	add_executable(${EXENAME} ${testfilename})
+	target_link_libraries(${EXENAME} ${ARGN})
+	add_test(
+		NAME ${EXENAME}
+		COMMAND $<TARGET_FILE:${EXENAME}>
+	)
+endif()
+endfunction()
+
+
+
 add_subdirectory(src)
+
+
+
 
