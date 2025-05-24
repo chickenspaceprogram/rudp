@@ -60,6 +60,8 @@ static inline bool bad_invariants(struct rudp_min_heap *heap, char *item, size_t
 
 struct rudp_min_heap *rudp_min_heap_new(struct rudp_allocator *alloc, size_t element_size, int (*cmp)(void *, void *))
 {
+	if (cmp == NULL)
+		return NULL;
 	struct rudp_min_heap *heap = rudp_allocator_alloc(sizeof(struct rudp_min_heap), alloc);
 	if (heap == NULL)
 		return NULL;
@@ -78,19 +80,19 @@ struct rudp_min_heap *rudp_min_heap_new(struct rudp_allocator *alloc, size_t ele
 
 void rudp_min_heap_delete(struct rudp_min_heap *heap)
 {
+	if (heap == NULL)
+		return;
 	rudp_allocator_free(heap->elements, heap->max_nel * heap->elem_size, heap->alloc);
 	rudp_allocator_free(heap, sizeof(struct rudp_min_heap), heap->alloc);
 }
 
 
-void *rudp_min_heap_peek(const struct rudp_min_heap *heap)
+const void *rudp_min_heap_peek(const struct rudp_min_heap *heap)
 {
-	if (heap == NULL) {
+	if (heap == NULL)
 		return NULL;
-	}
-	if (heap->current_nel == 0) {
+	if (heap->current_nel == 0)
 		return NULL;
-	}
 	return heap->elements;
 }
 
@@ -107,12 +109,11 @@ int rudp_min_heap_insert(struct rudp_min_heap *heap, void *item)
 		heap->elements = mem;
 	}
 	// heap now is def big enough
-	++(heap->current_nel);
-	if (heap->current_nel == 0) {
+	if ((heap->current_nel)++ == 0) {
 		memcpy(heap->elements, item, heap->elem_size);
 		return 0;
 	}
-	for (size_t i = heap->current_nel; i > 0; i = parent(i)) {
+	for (size_t i = heap->current_nel - 1; i > 0; i = parent(i)) {
 		if (heap->cmp(item, getval(heap, parent(i))) >= 0) { // item is bigger than parent
 			memcpy(getval(heap, i), item, heap->elem_size);
 			return 0;
@@ -127,17 +128,21 @@ int rudp_min_heap_insert(struct rudp_min_heap *heap, void *item)
 
 int rudp_min_heap_pop(struct rudp_min_heap *heap)
 {
-	if (heap == NULL) {
-		return RUDP_MIN_HEAP_EINVAL;
-	}
+	if (heap == NULL)
+		return -RUDP_MIN_HEAP_EINVAL;
+	if (heap->current_nel == 0)
+		return -RUDP_MIN_HEAP_EEMPTY;
+	
 	return rudp_min_heap_replace(heap, getval(heap, --(heap->current_nel)));
 }
 
 int rudp_min_heap_replace(struct rudp_min_heap *heap, void *elem)
 {
-	if (heap == NULL) {
-		return RUDP_MIN_HEAP_EINVAL;
-	}
+	if (heap == NULL || elem == NULL)
+		return -RUDP_MIN_HEAP_EINVAL;
+	if (heap->current_nel == 0)
+		return -RUDP_MIN_HEAP_EEMPTY;
+	
 	size_t i = 0;
 	while (bad_invariants(heap, elem, i)) {
 		memcpy(getval(heap, i), getval(heap, small_child(heap, i)), heap->elem_size);
@@ -148,7 +153,9 @@ int rudp_min_heap_replace(struct rudp_min_heap *heap, void *elem)
 }
 
 
-bool rudp_min_heap_isempty(struct rudp_min_heap *heap)
+bool rudp_min_heap_isempty(const struct rudp_min_heap *heap)
 {
+	if (heap == NULL)
+		return true;
 	return heap->current_nel == 0;
 }

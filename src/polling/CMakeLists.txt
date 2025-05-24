@@ -20,3 +20,4 @@ target_link_libraries(rudp_polling PUBLIC rudp_mem)
 ## tests ##
 
 make_test(tests/test_id_mgr.c PRIVATE rudp_polling)
+make_test(tests/test_minheap.c PRIVATE rudp_polling)
