@@ -1,4 +1,4 @@
-#include "generic_poll.h"
+#include <rudp/poll.h>
 
 #define RUDP_HAVE_EPOLL // remove this line
 #ifdef RUDP_HAVE_EPOLL

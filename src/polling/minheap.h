@@ -1,6 +1,6 @@
 #pragma once
 #include <stdbool.h>
-#include "alloc.h"
+#include <rudp/alloc.h>
 
 struct rudp_min_heap;
 

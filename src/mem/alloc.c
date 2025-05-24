@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "alloc.h"
+#include <rudp/alloc.h>
 
 void *rudp_allocator_alloc(size_t memsize, struct rudp_allocator *alloc)
 {
