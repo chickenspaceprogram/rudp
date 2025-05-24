@@ -1,0 +1,2 @@
+# ok yeah this is bad but i need memcpy for portability ;-;
+Checks: "-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling"

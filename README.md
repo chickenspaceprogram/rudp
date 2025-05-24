@@ -26,18 +26,25 @@ the goal is currently primarily reliability and getting the thing functioning.
 ## Building
 
 This project uses CMake to build, so you must have that installed.
-It also has a Makefile, for convenience, so you probably should also have some
-version of make installed. To build the project for release, enter `make rel`.
-Thereafter, to rebuild the project, you can enter just `make`.
+You'll also need a C compiler and some sort of build toolchain; Unix Makefiles
+work fine.
+
+To configure the project for release, enter 
+`cmake -B build -DCMAKE_BUILD_TYPE=Release`. Then, to build the project, you
+can enter `cmake --build build.` Optionally, you can build with multiple cores;
+something like `cmake --build build -j8` builds with 8 cores, for example.
+
+For debug builds, a Makefile is provided for convenience. You should have both
+the clang-tidy and cppcheck tools installed, although neither are required.
+You'll also want to edit the THREADS variable inside the makefile if your
+machine has more or fewer than 8 threads. The build will work regardless but
+there's no sense waiting for no reason.
 
 There are multiple different debug targets. If you don't wish to link ASAN,
-enter `make dbg`. This will create a debug build that will work nicely with GDB
-and the like. If you do wish to link ASAN, enter `make asan`. 
+enter `make dbg`. This will create a debug build that will work nicely with
+Valgrind. If you do wish to link ASAN, enter `make asan`. This will not work
+nicely with Valgrind, but ASAN itself is useful too.
 
 To clean the build directories without reconfiguring cmake, try `make clean`.
 To `rm -rf` the build directories and force CMake to reconfigure next time,
 try `make wipe`.
-
-It's possible to build using CMake directly, the Makefile in the project's
-root directory is just a convenience. See the Makefile for the commands you'll
-need to run.
