@@ -1,9 +1,12 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+
 cmake_minimum_required(VERSION 3.12)
 project(user_rudp C)
 
-if (NOT DEFINED CMAKE_EXPORT_COMPILE_COMMANDS)
-	set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-endif()
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(DEFINED RUDP_USE_ASAN AND RUDP_USE_ASAN)
 	message(NOTICE "Option `RUDP_USE_ASAN` specified. Linking ASAN.")
