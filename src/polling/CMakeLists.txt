@@ -19,5 +19,4 @@ target_link_libraries(rudp_polling PUBLIC rudp_mem)
 
 ## tests ##
 
-add_executable(test_id_mgr tests/test_id_mgr.c)
-target_link_libraries(test_id_mgr PRIVATE rudp_polling)
+make_test(tests/test_id_mgr.c PRIVATE rudp_polling)

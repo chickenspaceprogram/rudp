@@ -7,7 +7,6 @@ cmake_minimum_required(VERSION 3.14)
 project(user_rudp C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-include(CTest)
 
 # this file does kinda suck but it also does work and i can't be bothered to make it decent
 
@@ -16,6 +15,10 @@ option(RUDP_DEBUG "Builds a debug version of rudp and adds extra GCC/Clang-speci
 option(RUDP_CPPCHECK "Uses the cppcheck tool to statically analyze source code when building.")
 option(RUDP_CLANG_TIDY "Uses the clang-tidy tool to statically analyze source code when building.")
 option(RUDP_TESTS "Builds rudp's unit tests.")
+
+if(RUDP_TESTS)
+	include(CTest)
+endif()
 
 if(RUDP_USE_ASAN)
 	message(NOTICE "Option `RUDP_USE_ASAN` specified. Linking ASAN and setting `RUDP_DEBUG`.")

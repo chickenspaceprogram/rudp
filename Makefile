@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
-.PHONY: rel dbg asan wipe clean make
+.PHONY: rel dbg asan wipe clean make test memcheck
 
 DEBUG=-DCMAKE_BUILD_TYPE=Debug
 RELEASE=-DCMAKE_BUILD_TYPE=Release
@@ -12,30 +12,37 @@ TESTS=-DRUDP_TESTS=ON
 ASAN=-DRUDP_USE_ASAN=ON
 SENTINEL=build_sentinel
 THREADS=-j8
+BUILD_DIR=build
 
 # this is a makefile i have to shorten the commands I have to type
 
 make: $(SENTINEL)
 	: 'build'
-	cmake --build build $(THREADS)
+	cmake --build $(BUILD_DIR) $(THREADS)
 
 rel: wipe
 	: 'rel'
-	cmake -B build $(RELEASE) $(TESTS) $(STATIC_TOOLS)
+	cmake -B $(BUILD_DIR) $(RELEASE) $(TESTS) $(STATIC_TOOLS)
 	touch $(SENTINEL)
-	cmake --build build $(THREADS)
+	cmake --build $(BUILD_DIR) $(THREADS)
 
 dbg: wipe
 	: 'dbg'
-	cmake -B build $(DEBUG) $(TESTS) $(STATIC_TOOLS)
+	cmake -B $(BUILD_DIR) $(DEBUG) $(TESTS) $(STATIC_TOOLS)
 	touch $(SENTINEL)
-	cmake --build build $(THREADS)
+	cmake --build $(BUILD_DIR) $(THREADS)
 
 asan: wipe
 	: 'asan'
-	cmake -B build $(DEBUG) $(TESTS) $(STATIC_TOOLS) $(ASAN)
+	cmake -B $(BUILD_DIR) $(DEBUG) $(TESTS) $(STATIC_TOOLS) $(ASAN)
 	touch $(SENTINEL)
-	cmake --build build $(THREADS)
+	cmake --build $(BUILD_DIR) $(THREADS)
+
+test:
+	ctest --test-dir $(BUILD_DIR) $(THREADS)
+
+memcheck:
+	ctest --test-dir $(BUILD_DIR) -T memcheck $(THREADS)
 
 wipe:
 	: 'wipe'
@@ -44,11 +51,11 @@ wipe:
 
 clean:
 	: 'clean'
-	cmake --build build --target clean
+	cmake --build $(BUILD_DIR) --target clean
 
 $(SENTINEL):
 	: '$(SENTINEL)'
-	cmake -B build $(DEBUG) $(TESTS) $(STATIC_TOOLS)
+	cmake -B $(BUILD_DIR) $(DEBUG) $(TESTS) $(STATIC_TOOLS)
 	touch $(SENTINEL)
 
 
