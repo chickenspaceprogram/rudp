@@ -22,15 +22,6 @@ static inline size_t parent(size_t cur_index)
 	return (cur_index - 1) / 2;
 }
 
-struct rudp_min_heap {
-	char *elements;
-	size_t elem_size;
-	size_t max_nel;
-	size_t current_nel;
-	int (*cmp)(void *, void *);
-	struct rudp_allocator *alloc;
-};
-
 static inline char *getval(struct rudp_min_heap *heap, size_t i)
 {
 	return heap->elements + (i * heap->elem_size);
@@ -58,24 +49,19 @@ static inline bool bad_invariants(struct rudp_min_heap *heap, char *item, size_t
 	return heap->cmp(item, getval(heap, lchild(i) > 0)) || heap->cmp(item, getval(heap, rchild(i) > 0));
 }
 
-struct rudp_min_heap *rudp_min_heap_new(struct rudp_allocator *alloc, size_t element_size, int (*cmp)(void *, void *))
+int rudp_min_heap_new(struct rudp_min_heap *heap, struct rudp_allocator *alloc, size_t element_size, int (*cmp)(void *, void *))
 {
-	if (cmp == NULL)
-		return NULL;
-	struct rudp_min_heap *heap = rudp_allocator_alloc(sizeof(struct rudp_min_heap), alloc);
-	if (heap == NULL)
-		return NULL;
+	if (cmp == NULL || heap == NULL)
+		return -RUDP_MIN_HEAP_EINVAL;
 	heap->elements = rudp_allocator_alloc(MINHEAP_INIT_SIZE * element_size, alloc);
-	if (heap->elements == NULL) {
-		rudp_allocator_free(heap, sizeof(struct rudp_min_heap), alloc);
-		return NULL;
-	}
+	if (heap->elements == NULL)
+		return -RUDP_MIN_HEAP_EMEM;
 	heap->elem_size = element_size;
 	heap->max_nel = MINHEAP_INIT_SIZE;
 	heap->current_nel = 0;
 	heap->cmp = cmp;
 	heap->alloc = alloc;
-	return heap;
+	return 0;
 }
 
 void rudp_min_heap_delete(struct rudp_min_heap *heap)

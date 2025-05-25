@@ -5,19 +5,26 @@
 cmake_minimum_required(VERSION 3.14)
 
 add_library(rudp_polling
-	id_mgr.c
-	id_mgr.h
-	minheap.c
-	minheap.h
 	poll.c
 	include/rudp/poll.h
 )
 
+add_library(rudp_polling_internals
+	id_mgr.c
+	id_mgr.h
+	minheap.c
+	minheap.h
+	time_funcs.h
+	timers.h
+)
+
+
 target_include_directories(rudp_polling PUBLIC include)
-target_link_libraries(rudp_polling PUBLIC rudp_mem)
+target_link_libraries(rudp_polling PUBLIC rudp_mem PRIVATE rudp_polling_internals)
+target_link_libraries(rudp_polling_internals PRIVATE rudp_polling)
 
 
 ## tests ##
 
-make_test(tests/test_id_mgr.c PRIVATE rudp_polling)
-make_test(tests/test_minheap.c PRIVATE rudp_polling)
+make_test(tests/test_id_mgr.c PRIVATE rudp_polling rudp_polling_internals)
+make_test(tests/test_minheap.c PRIVATE rudp_polling rudp_polling_internals)

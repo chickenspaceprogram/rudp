@@ -6,7 +6,14 @@
 #include <stdbool.h>
 #include <rudp/alloc.h>
 
-struct rudp_min_heap;
+struct rudp_min_heap {
+	char *elements;
+	size_t elem_size;
+	size_t max_nel;
+	size_t current_nel;
+	int (*cmp)(void *, void *);
+	struct rudp_allocator *alloc;
+};
 
 enum rudp_min_heap_errors {
 	RUDP_MIN_HEAP_EEMPTY = 1,
@@ -14,7 +21,7 @@ enum rudp_min_heap_errors {
 	RUDP_MIN_HEAP_EMEM = 3,
 };
 
-struct rudp_min_heap *rudp_min_heap_new(struct rudp_allocator *alloc, size_t element_size, int (*cmp)(void *, void *));
+int rudp_min_heap_new(struct rudp_min_heap *heap, struct rudp_allocator *alloc, size_t element_size, int (*cmp)(void *, void *));
 void rudp_min_heap_delete(struct rudp_min_heap *heap);
 
 const void *rudp_min_heap_peek(const struct rudp_min_heap *heap);

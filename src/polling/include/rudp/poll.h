@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include <time.h>
 #include <rudp/alloc.h>
 
 
@@ -63,7 +62,6 @@ struct rudp_event {
 struct rudp_timer {
 	uint64_t timeout_ms;
 	uint64_t nrepeats;
-	uint64_t timer_id;
 	struct rudp_data data;
 };
 
