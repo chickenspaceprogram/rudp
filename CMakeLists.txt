@@ -20,6 +20,7 @@ if(RUDP_TESTS)
 	include(CTest)
 endif()
 
+
 if(RUDP_USE_ASAN)
 	message(NOTICE "Option `RUDP_USE_ASAN` specified. Linking ASAN and setting `RUDP_DEBUG`.")
 	set(CMAKE_CXX_FLAGS "-fsanitize=address -fsanitize-recover=address -fsanitize=undefined -fsanitize=leak")
@@ -73,6 +74,32 @@ if (RUDP_TESTS)
 	)
 endif()
 endfunction()
+
+include(CheckSymbolExists)
+
+check_symbol_exists(epoll_create "sys/epoll.h" HAVE_EPOLL_CREATE)
+check_symbol_exists(epoll_ctl "sys/epoll.h" HAVE_EPOLL_CTL)
+check_symbol_exists(epoll_wait "sys/epoll.h" HAVE_EPOLL_WAIT)
+
+check_symbol_exists(kqueue "sys/event.h" HAVE_KQUEUE_KQUEUE)
+check_symbol_exists(kevent "sys/event.h" HAVE_KQUEUE_KEVENT)
+check_symbol_exists(EV_SET "sys/event.h" HAVE_KQUEUE_EV_SET)
+
+if (HAVE_EPOLL_CREATE AND HAVE_EPOLL_CTL AND HAVE_EPOLL_WAIT)
+	message(NOTICE "epoll backend found!")
+	set(HAVE_EPOLL ON)
+else()
+	message(NOTICE "epoll backend not found")
+	set(HAVE_EPOLL OFF)
+endif()
+
+if (HAVE_KQUEUE_KQUEUE AND HAVE_KQUEUE_KEVENT AND HAVE_KQUEUE_EV_SET)
+	message(NOTICE "kqueue backend found!")
+	set(HAVE_KQUEUE ON)
+else()
+	message(NOTICE "kqueue backend not found")
+	set(HAVE_KQUEUE OFF)
+endif()
 
 
 

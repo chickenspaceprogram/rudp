@@ -18,7 +18,13 @@ add_library(rudp_polling_internals
 	timers.h
 )
 
-
+if (HAVE_EPOLL)
+	target_compile_definitions(rudp_polling PRIVATE RUDP_HAVE_EPOLL)
+elseif(HAVE_KQUEUE)
+	target_compile_definitions(rudp_polling PRIVATE RUDP_HAVE_KQUEUE)
+else()
+	message(FATAL_ERROR "Failed to find either an epoll or kqueue backend.")
+endif()
 target_include_directories(rudp_polling PUBLIC include)
 target_link_libraries(rudp_polling PUBLIC rudp_mem PRIVATE rudp_polling_internals)
 target_link_libraries(rudp_polling_internals PRIVATE rudp_polling)

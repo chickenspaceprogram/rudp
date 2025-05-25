@@ -4,7 +4,6 @@
 
 #include <rudp/poll.h>
 
-#define RUDP_HAVE_EPOLL // remove this line
 #ifdef RUDP_HAVE_EPOLL
 
 #include <sys/epoll.h>
