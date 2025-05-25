@@ -8,30 +8,20 @@ static const uint8_t RUDP_ID_VALID = 0x01;
 static const size_t INIT_IDLIST_SIZE = 1024;
 
 
-struct rudp_id_mgr {
-	uint8_t *idslist;
-	size_t idslist_len;
-	int64_t min_free_id;
-	struct rudp_allocator *alloc;
-};
 
-
-struct rudp_id_mgr *rudp_id_mgr_new(struct rudp_allocator *alloc)
+int rudp_id_mgr_new(struct rudp_id_mgr *mgr, struct rudp_allocator *alloc)
 {
-	struct rudp_id_mgr *mgr = rudp_allocator_alloc(sizeof(struct rudp_id_mgr), alloc);
-	if (mgr == NULL) {
-		return NULL;
-	}
+	if (mgr == NULL)
+		return -RUDP_ID_EINVAL;
 	mgr->idslist = rudp_allocator_alloc(INIT_IDLIST_SIZE * sizeof(uint8_t), alloc);
 	if (mgr->idslist == NULL) {
-		rudp_allocator_free(mgr, sizeof(struct rudp_id_mgr), alloc);
-		return NULL;
+		return -RUDP_ID_EMEM;
 	}
 	memset(mgr->idslist, 0, INIT_IDLIST_SIZE * sizeof(uint8_t));
 	mgr->idslist_len = INIT_IDLIST_SIZE;
 	mgr->min_free_id = 0;
 	mgr->alloc = alloc;
-	return mgr;
+	return 0;
 }
 
 
@@ -41,7 +31,6 @@ void rudp_id_mgr_delete(struct rudp_id_mgr *mgr)
 		return;
 	}
 	rudp_allocator_free(mgr->idslist, mgr->idslist_len, mgr->alloc);
-	rudp_allocator_free(mgr, sizeof(struct rudp_id_mgr), mgr->alloc);
 }
 
 // if this is too slow, i'll implement a min-heap
