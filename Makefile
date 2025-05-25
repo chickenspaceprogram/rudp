@@ -38,10 +38,10 @@ asan: wipe
 	touch $(SENTINEL)
 	cmake --build $(BUILD_DIR) $(THREADS)
 
-test:
+test: make
 	ctest --test-dir $(BUILD_DIR) $(THREADS)
 
-memcheck:
+memcheck: make
 	ctest --test-dir $(BUILD_DIR) -T memcheck $(THREADS)
 
 wipe:

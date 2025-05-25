@@ -69,7 +69,6 @@ void rudp_min_heap_delete(struct rudp_min_heap *heap)
 	if (heap == NULL)
 		return;
 	rudp_allocator_free(heap->elements, heap->max_nel * heap->elem_size, heap->alloc);
-	rudp_allocator_free(heap, sizeof(struct rudp_min_heap), heap->alloc);
 }
 
 
