@@ -72,7 +72,7 @@ void rudp_min_heap_delete(struct rudp_min_heap *heap)
 }
 
 
-const void *rudp_min_heap_peek(const struct rudp_min_heap *heap)
+void *rudp_min_heap_peek(const struct rudp_min_heap *heap)
 {
 	if (heap == NULL)
 		return NULL;

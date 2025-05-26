@@ -24,7 +24,7 @@ enum rudp_min_heap_errors {
 int rudp_min_heap_new(struct rudp_min_heap *heap, struct rudp_allocator *alloc, size_t element_size, int (*cmp)(void *, void *));
 void rudp_min_heap_delete(struct rudp_min_heap *heap);
 
-const void *rudp_min_heap_peek(const struct rudp_min_heap *heap);
+void *rudp_min_heap_peek(const struct rudp_min_heap *heap);
 
 int rudp_min_heap_insert(struct rudp_min_heap *heap, void *item);
 

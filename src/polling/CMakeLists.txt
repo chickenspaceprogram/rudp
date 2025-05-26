@@ -16,6 +16,7 @@ add_library(rudp_polling_internals
 	minheap.h
 	time_funcs.h
 	timers.h
+	timers.c
 )
 
 if (HAVE_EPOLL)

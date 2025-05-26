@@ -12,7 +12,7 @@ static inline struct timespec ms_to_timespec(int64_t ms)
 	};
 }
 
-static inline void add_to_timespec(struct timespec *out, const struct timespec *in)
+static inline void timespec_add(struct timespec *out, const struct timespec *in)
 {
 	out->tv_sec += in->tv_sec;
 	if ((BILLION - out->tv_nsec) < in->tv_nsec) {
@@ -21,10 +21,16 @@ static inline void add_to_timespec(struct timespec *out, const struct timespec *
 	}
 }
 
-static inline int timespec_cmp(void *tm1, void *tm2)
+// returns num ms difference
+static inline int64_t timespec_subtract(const struct timespec *t1, const struct timespec *t2)
 {
-	struct timespec *time1 = tm1;
-	struct timespec *time2 = tm2;
+	return (t1->tv_sec - t2->tv_sec) * 1000 + (t1->tv_nsec - t2->tv_nsec) / 1000000;
+}
+
+static inline int timespec_cmp(const void *tm1, const void *tm2)
+{
+	const struct timespec *time1 = tm1;
+	const struct timespec *time2 = tm2;
 	if (time1->tv_sec - time2->tv_sec == 0)
 		return time1->tv_nsec - time2->tv_nsec;
 	else

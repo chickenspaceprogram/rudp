@@ -62,23 +62,6 @@ int64_t rudp_id_new(struct rudp_id_mgr *mgr)
 	return newid;
 }
 
-int rudp_id_getflags(const struct rudp_id_mgr *mgr, int64_t rudp_id)
-{
-	if (mgr == NULL) {
-		return -RUDP_ID_EINVAL;
-	}
-	if (rudp_id < 0) {
-		return -RUDP_ID_EBADID;
-	}
-	if ((uint64_t)rudp_id > mgr->idslist_len) {
-		return -RUDP_ID_EBADID;
-	}
-	if (!(mgr->idslist[rudp_id] & RUDP_ID_VALID)) {
-		return -RUDP_ID_EBADID;
-	}
-	return mgr->idslist[rudp_id] & (~(RUDP_ID_VALID));
-}
-
 int rudp_id_setflags(struct rudp_id_mgr *mgr, int64_t rudp_id, uint8_t flags)
 {
 	if (mgr == NULL) {
