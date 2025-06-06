@@ -101,10 +101,5 @@ else()
 	set(HAVE_KQUEUE OFF)
 endif()
 
-
-
 add_subdirectory(src)
-
-
-
 

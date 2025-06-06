@@ -13,3 +13,5 @@ add_library(rudp_utils
 
 target_include_directories(rudp_utils PUBLIC include)
 target_link_libraries(rudp_utils PUBLIC rudp_mem)
+
+add_subdirectory(tests)
