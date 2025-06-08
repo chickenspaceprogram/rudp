@@ -75,15 +75,15 @@ int main(void)
 	};
 
 	RUDP_HASHMAP_TYPE(const char *, int) hm;
-	assert(rudp_hashmap_new(&hm, NULL, hash_str, cmp_str) == 0);
+	assert(rudp_hashmap_new(&hm, NULL) == 0);
 	for (int i = 0; i < 16; ++i) {
-		assert(rudp_hashmap_at(&hm, keys + i) == NULL);
+		assert(rudp_hashmap_at(&hm, keys + i, hash_str, cmp_str) == NULL);
 	}
 	for (int i = 0; i < 16; ++i) {
-		assert(rudp_hashmap_insert(&hm, keys + i, vals + i, NULL) == 0);
+		assert(rudp_hashmap_insert(&hm, keys + i, vals + i, NULL, hash_str) == 0);
 	}
 	for (int i = 0; i < 16; ++i) {
-		const int *retval = rudp_hashmap_at(&hm, keys + i);
+		const int *retval = rudp_hashmap_at(&hm, keys + i, hash_str, cmp_str);
 		assert(retval != NULL);
 		assert(*retval == vals[i]);
 	}
