@@ -4,7 +4,7 @@
 
 #pragma once
 #include <stdbool.h>
-#include <rudp/alloc.h>
+#include <rudp/utils/alloc.h>
 
 struct rudp_min_heap {
 	char *elements;

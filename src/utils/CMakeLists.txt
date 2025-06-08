@@ -5,13 +5,13 @@
 cmake_minimum_required(VERSION 3.14)
 
 add_library(rudp_utils
-	hashmap.c
+	alloc.c
 	include/rudp/utils/hashmap.h
 	include/rudp/utils/intmanip.h
 	include/rudp/utils/vector.h
+	include/rudp/utils/alloc.h
 )
 
 target_include_directories(rudp_utils PUBLIC include)
-target_link_libraries(rudp_utils PUBLIC rudp_mem)
 
 add_subdirectory(tests)

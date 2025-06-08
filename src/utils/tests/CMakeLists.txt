@@ -5,3 +5,4 @@
 cmake_minimum_required(VERSION 3.14)
 
 make_test(test_vector.c PUBLIC rudp_utils)
+make_test(test_hashmap.c PUBLIC rudp_utils)

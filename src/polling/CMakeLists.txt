@@ -24,7 +24,7 @@ else()
 	message(FATAL_ERROR "Failed to find either an epoll or kqueue backend.")
 endif()
 target_include_directories(rudp_polling PUBLIC include)
-target_link_libraries(rudp_polling PUBLIC rudp_mem)
+target_link_libraries(rudp_polling PUBLIC rudp_utils)
 
 
 ## tests ##

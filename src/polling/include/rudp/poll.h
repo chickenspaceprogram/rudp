@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include <rudp/alloc.h>
+#include <rudp/utils/alloc.h>
 
 
 // This polling API is designed to nicely map onto the `epoll` and `kqueue` interfaces.

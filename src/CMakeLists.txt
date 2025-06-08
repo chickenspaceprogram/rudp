@@ -3,6 +3,5 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 cmake_minimum_required(VERSION 3.14)
-add_subdirectory(mem)
 add_subdirectory(polling)
 add_subdirectory(utils)
