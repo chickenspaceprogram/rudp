@@ -2,15 +2,14 @@
 #include <stdint.h>
 #include <assert.h>
 
-int cmp_str(const char **s1, const char **s2)
+int cmp_str(const char *s1, const char *s2)
 {
-	return strcmp(*s1, *s2);
+	return strcmp(s1, s2);
 }
 
 
-size_t hash_str(const char **pcstr)
+size_t hash_str(const char *cstr)
 {
-	const char *cstr = *pcstr;
 	if (sizeof(size_t) == 8) {
 		const uint64_t offset_basis = 0xcbf29ce484222325;
 		const uint64_t fnv_prime = 0x00000100000001b3;
@@ -75,24 +74,24 @@ int main(void)
 	};
 
 	RUDP_HASHMAP_TYPE(const char *, int) hm;
-	assert(rudp_hashmap_new(&hm, NULL) == 0);
+	assert(rudp_hashmap_new(hm, NULL) == 0);
 	for (int i = 0; i < 16; ++i) {
-		assert(rudp_hashmap_at(&hm, keys + i, hash_str, cmp_str) == NULL);
+		assert(rudp_hashmap_at(hm, keys[i], hash_str, cmp_str) == NULL);
 	}
 	for (int i = 0; i < 16; ++i) {
-		assert(rudp_hashmap_insert(&hm, keys + i, vals + i, NULL, hash_str) == 0);
+		assert(rudp_hashmap_insert(hm, keys[i], vals[i], NULL, hash_str, cmp_str) == 0);
 	}
 	for (int i = 0; i < 16; ++i) {
-		const int *retval = rudp_hashmap_at(&hm, keys + i, hash_str, cmp_str);
+		const int *retval = rudp_hashmap_at(hm, keys[i], hash_str, cmp_str);
 		assert(retval != NULL);
 		assert(*retval == vals[i]);
 	}
 	bool foundflags[16] = {0};
-	RUDP_HASHMAP_BUCKETTYPE(&hm) *bucket = NULL;
-	RUDP_HASHMAP_ITERTYPE(&hm) iter;
-	rudp_hashmap_new_iter(&iter, &hm);
+	RUDP_HASHMAP_BUCKETTYPE(hm) *bucket = NULL;
+	RUDP_HASHMAP_ITERTYPE(hm) iter;
+	rudp_hashmap_new_iter(iter, hm);
 	do {
-		bucket = rudp_hashmap_iter_next(&iter);
+		bucket = rudp_hashmap_iter_next(iter);
 		if (bucket != NULL) {
 			assert(bucket->val >= 1 && bucket->val <= 16);
 			foundflags[bucket->val - 1] = true; 
@@ -102,5 +101,5 @@ int main(void)
 	for (int i = 0; i < 16; ++i) {
 		assert(foundflags[i]);
 	}
-	rudp_hashmap_delete(&hm, NULL);
+	rudp_hashmap_delete(hm, NULL);
 }

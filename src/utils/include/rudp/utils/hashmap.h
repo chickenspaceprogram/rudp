@@ -25,27 +25,27 @@
 		size_t nel;\
 	}
 // god i love the comma operator
-#define rudp_hashmap_new(MAPPTR, ALLOCATOR) (\
-	(MAPPTR)->array = rudp_allocator_alloc(sizeof(*(MAPPTR)->array) * (RUDP_HASHMAP_INITSIZE), (ALLOCATOR)),\
-	memset((MAPPTR)->array, 0, sizeof(*(MAPPTR)->array) * (RUDP_HASHMAP_INITSIZE)),\
-	(MAPPTR)->bufsize = 16,\
-	(MAPPTR)->nel = 0,\
-	((MAPPTR)->array == NULL) ? (-1) : 0\
+#define rudp_hashmap_new(MAP, ALLOCATOR) (\
+	(MAP).array = rudp_allocator_alloc(sizeof(*(MAP).array) * (RUDP_HASHMAP_INITSIZE), (ALLOCATOR)),\
+	memset((MAP).array, 0, sizeof(*(MAP).array) * (RUDP_HASHMAP_INITSIZE)),\
+	(MAP).bufsize = 16,\
+	(MAP).nel = 0,\
+	((MAP).array == NULL) ? (-1) : 0\
 )
 
-#define rudp_hashmap_delete(MAPPTR, ALLOCATOR) do {\
-	rudp_allocator_free((MAPPTR)->array, (MAPPTR)->bufsize, (ALLOCATOR));\
+#define rudp_hashmap_delete(MAP, ALLOCATOR) do {\
+	rudp_allocator_free((MAP).array, (MAP).bufsize, (ALLOCATOR));\
 } while (0)
 
-#define rudp_hashmap_at(MAPPTR, KEYPTR, HASHFN, CMPFN) ({\
-	size_t RUDP_HASHMAP_AT_INDEX_INTERNAL_ = HASHFN((KEYPTR)) & ((MAPPTR)->bufsize - 1);\
-	typeof((MAPPTR)->array->val) *RUDP_HASHMAP_AT_RETVAL_INTERNAL_ = NULL;\
-	while ((MAPPTR)->array[RUDP_HASHMAP_AT_INDEX_INTERNAL_].is_filled) {\
-		if (CMPFN((KEYPTR), &(MAPPTR)->array[RUDP_HASHMAP_AT_INDEX_INTERNAL_].key) == 0) {\
-			RUDP_HASHMAP_AT_RETVAL_INTERNAL_ = &(MAPPTR)->array[RUDP_HASHMAP_AT_INDEX_INTERNAL_].val;\
+#define rudp_hashmap_at(MAP, KEY, HASHFN, CMPFN) ({\
+	size_t RUDP_HASHMAP_AT_INDEX_INTERNAL_ = HASHFN((KEY)) & ((MAP).bufsize - 1);\
+	typeof(&((MAP).array->val)) RUDP_HASHMAP_AT_RETVAL_INTERNAL_ = NULL;\
+	while ((MAP).array[RUDP_HASHMAP_AT_INDEX_INTERNAL_].is_filled) {\
+		if (CMPFN((KEY), (MAP).array[RUDP_HASHMAP_AT_INDEX_INTERNAL_].key) == 0) {\
+			RUDP_HASHMAP_AT_RETVAL_INTERNAL_ = &(MAP).array[RUDP_HASHMAP_AT_INDEX_INTERNAL_].val;\
 			break;\
 		}\
-		RUDP_HASHMAP_AT_INDEX_INTERNAL_ = (RUDP_HASHMAP_AT_INDEX_INTERNAL_ + 1) & ((MAPPTR)->bufsize - 1);\
+		RUDP_HASHMAP_AT_INDEX_INTERNAL_ = (RUDP_HASHMAP_AT_INDEX_INTERNAL_ + 1) & ((MAP).bufsize - 1);\
 	}\
 	RUDP_HASHMAP_AT_RETVAL_INTERNAL_;\
 })
@@ -54,70 +54,80 @@
 #error "RUDP_HASHMAP_INSERT_INTERNAL_ is reserved for the implementation of rudp_hashmap_insert. Please do not define this macro."
 #endif
 
-#define RUDP_HASHMAP_INSERT_INTERNAL_(MAPPTR, KEYPTR, VALPTR, HASHFN) do {\
-	size_t RUDP_HASHMAP_INSERT_INDEX_INTERNAL_ = HASHFN((KEYPTR)) & ((MAPPTR)->bufsize - 1);\
+#ifdef RUDP_HASHMAP_DUMMY_CMP_INTERNAL_
+#error "RUDP_HASHMAP_DUMMY_CMP_INTERNAL_ is reserved for the implementation of rudp_hashmap_insert. Please do not define this macro."
+#endif
+
+#define RUDP_HASHMAP_DUMMY_CMP_INTERNAL_(A, B) -1
+
+#define RUDP_HASHMAP_INSERT_INTERNAL_(MAP, KEY, VAL, HASHFN, CMPFN) do {\
+	size_t RUDP_HASHMAP_INSERT_INDEX_INTERNAL_ = HASHFN((KEY)) & ((MAP).bufsize - 1);\
 	assert(RUDP_HASHMAP_INSERT_INDEX_INTERNAL_ != 0);\
-	while ((MAPPTR)->array[RUDP_HASHMAP_INSERT_INDEX_INTERNAL_].is_filled)\
-		RUDP_HASHMAP_INSERT_INDEX_INTERNAL_ = (RUDP_HASHMAP_INSERT_INDEX_INTERNAL_ + 1) & ((MAPPTR)->bufsize - 1);\
-	(MAPPTR)->array[RUDP_HASHMAP_INSERT_INDEX_INTERNAL_].is_filled = true;\
-	(MAPPTR)->array[RUDP_HASHMAP_INSERT_INDEX_INTERNAL_].key = *(KEYPTR);\
-	(MAPPTR)->array[RUDP_HASHMAP_INSERT_INDEX_INTERNAL_].val = *(VALPTR);\
+	while ((MAP).array[RUDP_HASHMAP_INSERT_INDEX_INTERNAL_].is_filled &&\
+		(\
+			(CMPFN((KEY), ((MAP).array[RUDP_HASHMAP_INSERT_INDEX_INTERNAL_].key))) != 0\
+		)\
+	)\
+		RUDP_HASHMAP_INSERT_INDEX_INTERNAL_ = (RUDP_HASHMAP_INSERT_INDEX_INTERNAL_ + 1) & ((MAP).bufsize - 1);\
+	(MAP).array[RUDP_HASHMAP_INSERT_INDEX_INTERNAL_].is_filled = true;\
+	(MAP).array[RUDP_HASHMAP_INSERT_INDEX_INTERNAL_].key = (KEY);\
+	(MAP).array[RUDP_HASHMAP_INSERT_INDEX_INTERNAL_].val = (VAL);\
 } while (0)
 
-#define rudp_hashmap_reserve(MAPPTR, SPACEAMT, ALLOC, HASHFN) (((MAPPTR)->nel < ((RUDP_HASHMAP_MAXLOADFACTOR) * (MAPPTR)->bufsize)) ? 0 : ({\
+#define rudp_hashmap_reserve(MAP, SPACEAMT, ALLOC, HASHFN) (((MAP).nel < ((RUDP_HASHMAP_MAXLOADFACTOR) * (MAP).bufsize)) ? 0 : ({\
 	int RUDP_HASHMAP_RESERVE_RETVAL_INTERNAL_ = 0;\
-	typeof((MAPPTR)->array) RUDP_HASHMAP_RESERVE_NEWARR_INTERNAL_ = rudp_allocator_alloc((MAPPTR)->bufsize * 2, (ALLOC));\
-	typeof((MAPPTR)->array) RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_ = (MAPPTR)->array;\
+	typeof((MAP).array) RUDP_HASHMAP_RESERVE_NEWARR_INTERNAL_ = rudp_allocator_alloc((MAP).bufsize * 2, (ALLOC));\
+	typeof((MAP).array) RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_ = (MAP).array;\
 	if (RUDP_HASHMAP_RESERVE_NEWARR_INTERNAL_ == NULL) {\
 		RUDP_HASHMAP_RESERVE_RETVAL_INTERNAL_ = -1;\
 	}\
 	else {\
-		memset(RUDP_HASHMAP_RESERVE_NEWARR_INTERNAL_, 0, ((MAPPTR)->bufsize * 2));\
-		(MAPPTR)->array = RUDP_HASHMAP_RESERVE_NEWARR_INTERNAL_;\
-		(MAPPTR)->bufsize *= 2;\
-		for (size_t RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_ = 0; RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_ < (MAPPTR)->bufsize / 2; ++RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_) {\
+		memset(RUDP_HASHMAP_RESERVE_NEWARR_INTERNAL_, 0, ((MAP).bufsize * 2));\
+		(MAP).array = RUDP_HASHMAP_RESERVE_NEWARR_INTERNAL_;\
+		(MAP).bufsize *= 2;\
+		for (size_t RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_ = 0; RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_ < (MAP).bufsize / 2; ++RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_) {\
 			if (RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_[RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_].is_filled) {\
-				RUDP_HASHMAP_INSERT_INTERNAL_(MAPPTR, &RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_[RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_].key, &RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_[RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_].val, HASHFN);\
+				RUDP_HASHMAP_INSERT_INTERNAL_(MAP, RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_[RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_].key, RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_[RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_].val, HASHFN, RUDP_HASHMAP_DUMMY_CMP_INTERNAL_);\
 			}\
 		}\
-		rudp_allocator_free(RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_, (MAPPTR)->bufsize / 2, (ALLOC));\
+		rudp_allocator_free(RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_, (MAP).bufsize / 2, (ALLOC));\
 	}\
 	RUDP_HASHMAP_RESERVE_RETVAL_INTERNAL_;\
 }))
 
 
-#define rudp_hashmap_insert(MAPPTR, KEYPTR, VALPTR, ALLOC, HASHFN) ((rudp_hashmap_reserve(MAPPTR, (MAPPTR)->bufsize + 1, ALLOC, HASHFN) == 0) ? ({\
-	++((MAPPTR)->nel);\
-	RUDP_HASHMAP_INSERT_INTERNAL_(MAPPTR, KEYPTR, VALPTR, HASHFN);\
+#define rudp_hashmap_insert(MAP, KEY, VAL, ALLOC, HASHFN, CMPFN) ((rudp_hashmap_reserve(MAP, (MAP).bufsize + 1, ALLOC, HASHFN) == 0) ? ({\
+	++((MAP).nel);\
+	RUDP_HASHMAP_INSERT_INTERNAL_(MAP, KEY, VAL, HASHFN, CMPFN);\
 	0;\
 }) : -1)
 
-#define RUDP_HASHMAP_BUCKETTYPE(MAPPTR)\
-	typeof(*(MAPPTR)->array)
+#define RUDP_HASHMAP_BUCKETTYPE(MAP)\
+	typeof(*(MAP).array)
 
-#define rudp_hashmap_bucket_getkey(BUCKETPTR) (&(BUCKETPTR)->key)
-#define rudp_hashmap_bucket_getval(BUCKETPTR) (&(BUCKETPTR)->val)
+#define rudp_hashmap_bucket_getkey(BUCKET) ((BUCKET).key)
+#define rudp_hashmap_bucket_getval(BUCKET) ((BUCKET).val)
 
-#define RUDP_HASHMAP_ITERTYPE(MAPPTR)\
+#define RUDP_HASHMAP_ITERTYPE(MAP)\
 	struct {\
-		typeof(MAPPTR) map;\
+		typeof(&MAP) map_ptr;\
 		size_t index;\
 	}
 
-#define rudp_hashmap_new_iter(ITERPTR, MAPPTR)\
+#define rudp_hashmap_new_iter(ITER, MAP)\
 	do {\
-		(ITERPTR)->map = MAPPTR;\
-		(ITERPTR)->index = 0;\
+		(ITER).map_ptr = &MAP;\
+		(ITER).index = 0;\
 	} while (0)
 
 
-// returns something of RUDP_HASHMAP_BUCKETTYPE
-#define rudp_hashmap_iter_next(ITERPTR) ({\
-	while (!((ITERPTR)->map->array[(ITERPTR)->index].is_filled) && (ITERPTR)->index < (ITERPTR)->map->bufsize)\
-		++((ITERPTR)->index);\
-	++((ITERPTR)->index);\
-	((ITERPTR)->index - 1 < (ITERPTR)->map->bufsize) ? (\
-		(ITERPTR)->map->array + (ITERPTR)->index - 1\
+// returns pointer to RUDP_HASHMAP_BUCKETTYPE
+#define rudp_hashmap_iter_next(ITER) ({\
+	while (!((ITER).map_ptr->array[(ITER).index].is_filled) && (ITER).index < (ITER).map_ptr->bufsize)\
+		++((ITER).index);\
+	++((ITER).index);\
+	((ITER).index - 1 < (ITER).map_ptr->bufsize) ? (\
+		(ITER).map_ptr->array + (ITER).index - 1\
 	) : NULL;\
 })
 
