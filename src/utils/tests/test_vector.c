@@ -12,7 +12,13 @@ int main(void)
 	assert(vec.nel == rudp_vector_size(vec) && rudp_vector_size(vec) == 14);
 	assert(vec.bufsize == rudp_vector_capacity(vec) && rudp_vector_capacity(vec) == 16);
 	for (int i = 0; i < 14; ++i) {
-		assert(*rudp_vector_at(vec, i) == nums[i]);
+		assert(rudp_vector_at(vec, i) == nums[i]);
+	}
+	for (int i = 0; i < 14; ++i) {
+		rudp_vector_at(vec, i) = i;
+	}
+	for (int i = 0; i < 14; ++i) {
+		assert(rudp_vector_at(vec, i) == i);
 	}
 	for (int i = 0; i < 7; ++i) {
 		rudp_vector_pop(vec);

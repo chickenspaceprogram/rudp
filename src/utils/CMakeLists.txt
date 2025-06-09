@@ -10,6 +10,7 @@ add_library(rudp_utils
 	include/rudp/utils/intmanip.h
 	include/rudp/utils/vector.h
 	include/rudp/utils/alloc.h
+	include/rudp/utils/minheap.h
 )
 
 target_include_directories(rudp_utils PUBLIC include)

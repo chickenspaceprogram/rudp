@@ -54,7 +54,13 @@ struct {\
 // Expands to the value of the element of VEC at INDEX.
 // Effectively, this is VEC[INDEX] if VEC was a normal array.
 // INDEX must be an integer type, and it must be greater than 0 and less than rudp_vector_capacity(VEC)
-#define rudp_vector_at(VEC, INDEX) (((VEC).data) + (INDEX))
+#define rudp_vector_at(VEC, INDEX) (((VEC).data)[(INDEX)])
+
+#define rudp_vector_swap_elem(VEC, INDEX1, INDEX2) do {\
+	typeof(*(VEC).data) RUDP_VECTOR_SWAP_ELEM_TEMP_INTERNAL_ = (VEC).data[(INDEX1)];\
+	(VEC).data[(INDEX1)] = (VEC).data[(INDEX2)];\
+	(VEC).data[(INDEX2)] = RUDP_VECTOR_SWAP_ELEM_TEMP_INTERNAL_;\
+} while (0)
 
 // Appends the value of the variable named by ELEM to the end of VEC.
 // VEC must be the name of a rudp_vector previously initialized by rudp_vector_new.
