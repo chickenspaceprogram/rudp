@@ -19,11 +19,25 @@ struct rudp_allocator {
 	void *ctx; // passed into all functions
 };
 
+extern struct rudp_allocator *dummy_test_alloc; // used to test that mem sizes are passed to realloc and free properly
+// this is only safe to use in a single-threaded context!
+
 // generic functions, these default to libc functions when alloc == NULL
 
 void *rudp_allocator_alloc(size_t memsize, struct rudp_allocator *alloc);
 void rudp_allocator_free(void *mem, size_t memsize, struct rudp_allocator *alloc);
 void *rudp_allocator_realloc(void *mem, size_t newsize, size_t oldsize, struct rudp_allocator *alloc);
+
+inline static void *rudp_allocator_allocarray(size_t nel, size_t elemsize, struct rudp_allocator *alloc)
+{
+	return rudp_allocator_alloc(nel * elemsize, alloc);
+}
+
+inline static void rudp_allocator_freearray(void *mem, size_t nel, size_t elemsize, struct rudp_allocator *alloc)
+{
+	rudp_allocator_free(mem, nel * elemsize, alloc);
+}
+
 // same as freebsd reallocf api, frees the pointer if reallocation fails
 inline static void *rudp_allocator_reallocf(void *mem, size_t newsize, size_t oldsize, struct rudp_allocator *alloc)
 {

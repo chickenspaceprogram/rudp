@@ -27,7 +27,7 @@ struct {\
 // VEC must be a rudp_vector struct that has a type given by RUDP_VECTOR_TYPE() for some type.
 // ALLOCATOR_PTR is a pointer to a rudp_allocator struct. It may be NULL.
 #define rudp_vector_new(VEC, ALLOCATOR_PTR)\
-	((VEC).data = rudp_allocator_alloc(sizeof(*(VEC).data) * (RUDP_VECTOR_INIT_SIZE), (ALLOCATOR_PTR)),\
+	((VEC).data = rudp_allocator_allocarray((RUDP_VECTOR_INIT_SIZE), sizeof(*(VEC).data), (ALLOCATOR_PTR)),\
 	(VEC).nel = 0,\
 	(VEC).bufsize = (RUDP_VECTOR_INIT_SIZE),\
 	((VEC).data == NULL) ? -1 : 0)\
@@ -37,7 +37,7 @@ struct {\
 // ALLOCATOR_PTR is a pointer to a rudp_allocator struct. It may be NULL.
 // ALLOCATOR_PTR must be the same allocator previously used on the vector.
 #define rudp_vector_delete(VEC, ALLOCATOR_PTR)\
-	(rudp_allocator_free((VEC).data, sizeof(*(VEC).data) * (VEC).bufsize, (ALLOCATOR_PTR)))
+	(rudp_allocator_freearray((VEC).data, (VEC).bufsize, sizeof(*(VEC).data), (ALLOCATOR_PTR)))
 	
 // Gets the number of elements in a rudp_vector.
 // VEC must be the name of a rudp_vector previously initialized by rudp_vector_new.
@@ -98,7 +98,7 @@ _Generic((ELEM), typeof(*(VEC).data):\
 #define rudp_vector_reserve_exact(VEC, NEWSIZE, ALLOC) ({\
 	int RUDP_VECTOR_RESERVE_EXACT_RETVAL_INTERNAL_ = 0;\
 	if ((NEWSIZE) > (VEC).bufsize) {\
-		typeof((VEC).data) RUDP_VECTOR_RESERVE_EXACT_NEWPTR_INTERNAL = rudp_allocator_reallocarray((VEC).data, (NEWSIZE), (VEC).bufsize, sizeof((VEC).data), (ALLOC));\
+		typeof((VEC).data) RUDP_VECTOR_RESERVE_EXACT_NEWPTR_INTERNAL = rudp_allocator_reallocarray((VEC).data, (NEWSIZE), (VEC).bufsize, sizeof((*(VEC).data)), (ALLOC));\
 		if (RUDP_VECTOR_RESERVE_EXACT_NEWPTR_INTERNAL != NULL) {\
 			(VEC).data = RUDP_VECTOR_RESERVE_EXACT_NEWPTR_INTERNAL;\
 			(VEC).bufsize = (NEWSIZE);\

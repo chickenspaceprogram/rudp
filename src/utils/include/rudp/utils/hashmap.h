@@ -41,18 +41,24 @@
 	rudp_allocator_free((MAP).array, (MAP).bufsize * sizeof((*((MAP).array))), (ALLOCATOR));\
 } while (0)
 
-#define rudp_hashmap_at(MAP, KEY, HASHFN, CMPFN) ({\
+#ifdef RUDP_HASHMAP_AT_INTERNAL_
+#error "Cannot define RUDP_HASHMAP_AT_INTERNAL_ macro!"
+#endif
+
+#define RUDP_HASHMAP_AT_INTERNAL_(MAP, KEY, HASHFN, CMPFN) ({\
 	size_t RUDP_HASHMAP_AT_INDEX_INTERNAL_ = HASHFN((KEY)) & ((MAP).bufsize - 1);\
-	typeof(&((MAP).array->val)) RUDP_HASHMAP_AT_RETVAL_INTERNAL_ = NULL;\
+	typeof(((MAP).array)) RUDP_HASHMAP_AT_RETVAL_INTERNAL_ = NULL;\
 	while ((MAP).array[RUDP_HASHMAP_AT_INDEX_INTERNAL_].is_filled) {\
 		if (CMPFN((KEY), (MAP).array[RUDP_HASHMAP_AT_INDEX_INTERNAL_].key) == 0) {\
-			RUDP_HASHMAP_AT_RETVAL_INTERNAL_ = &(MAP).array[RUDP_HASHMAP_AT_INDEX_INTERNAL_].val;\
+			RUDP_HASHMAP_AT_RETVAL_INTERNAL_ = &(MAP).array[RUDP_HASHMAP_AT_INDEX_INTERNAL_];\
 			break;\
 		}\
 		RUDP_HASHMAP_AT_INDEX_INTERNAL_ = (RUDP_HASHMAP_AT_INDEX_INTERNAL_ + 1) & ((MAP).bufsize - 1);\
 	}\
 	RUDP_HASHMAP_AT_RETVAL_INTERNAL_;\
 })
+
+#define rudp_hashmap_at(MAP, KEY, HASHFN, CMPFN) ((RUDP_HASHMAP_AT_INTERNAL_(MAP, KEY, HASHFN, CMPFN) == NULL) ? (NULL) : (&(RUDP_HASHMAP_AT_INTERNAL_(MAP, KEY, HASHFN, CMPFN))->val))
 
 #ifdef RUDP_HASHMAP_INSERT_INTERNAL_
 #error "RUDP_HASHMAP_INSERT_INTERNAL_ is reserved for the implementation of rudp_hashmap_insert. Please do not define this macro."
@@ -105,6 +111,12 @@
 	RUDP_HASHMAP_INSERT_INTERNAL_(MAP, KEY, VAL, HASHFN, CMPFN);\
 	0;\
 }) : -1)
+
+#define rudp_hashmap_remove(MAP, KEY, HASHFN, CMPFN) do {\
+	if (RUDP_HASHMAP_AT_INTERNAL_(MAP, KEY, HASHFN, CMPFN) != NULL) {\
+		RUDP_HASHMAP_AT_INTERNAL_(MAP, KEY, HASHFN, CMPFN)->is_filled = false;\
+	}\
+} while (0);
 
 #define RUDP_HASHMAP_BUCKETTYPE(MAP)\
 	typeof(*(MAP).array)

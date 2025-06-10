@@ -74,19 +74,25 @@ int main(void)
 	};
 
 	RUDP_HASHMAP_TYPE(const char *, int) hm;
-	assert(rudp_hashmap_new(hm, NULL) == 0);
+	assert(rudp_hashmap_new(hm, dummy_test_alloc) == 0);
 	for (int i = 0; i < 16; ++i) {
 		assert(rudp_hashmap_at(hm, keys[i], hash_str, cmp_str) == NULL);
 	}
 	for (int i = 0; i < 16; ++i) {
-		assert(rudp_hashmap_insert(hm, keys[i], vals[i], NULL, hash_str, cmp_str) == 0);
+		assert(rudp_hashmap_insert(hm, keys[i], vals[i], dummy_test_alloc, hash_str, cmp_str) == 0);
 	}
 	for (int i = 0; i < 16; ++i) {
 		const int *retval = rudp_hashmap_at(hm, keys[i], hash_str, cmp_str);
 		assert(retval != NULL);
 		assert(*retval == vals[i]);
 	}
+	rudp_hashmap_remove(hm, "key1", hash_str, cmp_str);
+	rudp_hashmap_remove(hm, "key4", hash_str, cmp_str);
+	rudp_hashmap_remove(hm, "key10", hash_str, cmp_str);
+	rudp_hashmap_remove(hm, "key12", hash_str, cmp_str);
+	rudp_hashmap_remove(hm, "key15", hash_str, cmp_str);
 	bool foundflags[16] = {0};
+	bool targetflags[16] = {false, true, true, false, true, true, true, true, true, false, true, false, true, true, false, true};
 	RUDP_HASHMAP_BUCKETTYPE(hm) *bucket = NULL;
 	RUDP_HASHMAP_ITERTYPE(hm) iter;
 	rudp_hashmap_new_iter(iter, hm);
@@ -99,7 +105,7 @@ int main(void)
 		}
 	} while (bucket != NULL);
 	for (int i = 0; i < 16; ++i) {
-		assert(foundflags[i]);
+		assert(foundflags[i] == targetflags[i]);
 	}
-	rudp_hashmap_delete(hm, NULL);
+	rudp_hashmap_delete(hm, dummy_test_alloc);
 }

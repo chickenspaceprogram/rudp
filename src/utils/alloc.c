@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <rudp/utils/alloc.h>
+#include <rudp/utils/hashmap.h>
+#include <assert.h>
 
 void *rudp_allocator_alloc(size_t memsize, struct rudp_allocator *alloc)
 {
@@ -63,3 +65,84 @@ void *rudp_allocator_reallocarray(void *mem, size_t new_nel, size_t old_nel, siz
 	return rudp_allocator_realloc(mem, new_nel * elem_size, old_nel * elem_size, alloc);
 }
 
+static RUDP_HASHMAP_TYPE(void *, size_t) dummy_map;
+bool dummy_map_init = false;
+
+union voidptrunion {
+	void *ptr;
+	char bytes[sizeof(void *)];
+};
+
+static inline size_t ptrhash(void *ptr)
+{
+	union voidptrunion un = {.ptr = ptr};
+	if (sizeof(size_t) == 8) {
+		const uint64_t offset_basis = 0xcbf29ce484222325;
+		const uint64_t fnv_prime = 0x00000100000001b3;
+		uint64_t hash = offset_basis;
+		for (size_t i = 0; i < sizeof(void *); ++i) {
+			hash ^= un.bytes[i];
+			hash *= fnv_prime;
+		}
+		return hash;
+	}
+	else if (sizeof(size_t) == 4) {
+		const uint32_t offset_basis = 0x811c9dc5;
+		const uint32_t fnv_prime = 0x01000193;
+		uint32_t hash = offset_basis;
+		for (size_t i = 0; i < sizeof(void *); ++i) {
+			hash ^= un.bytes[i];
+			hash *= fnv_prime;
+		}
+		return hash;
+	}
+	else {
+		abort();
+	}
+}
+
+static inline int ptrcmp(void *p1, void *p2)
+{
+	if (p1 > p2) {
+		return 1;
+	}
+	else if (p1 < p2) {
+		return -1;
+	}
+	return 0;
+}
+
+static inline void freedummyhashmap(void)
+{
+	rudp_hashmap_delete(dummy_map, NULL);
+}
+
+static inline void *dummy_test_allocfn(size_t amount, void *ctx)
+{
+	if (!dummy_map_init) {
+		rudp_hashmap_new(dummy_map, NULL);
+		dummy_map_init = true;
+		atexit(freedummyhashmap);
+	}
+	void *newptr = malloc(amount);
+	if (newptr == NULL)
+		return NULL;
+	rudp_hashmap_insert(dummy_map, newptr, amount, NULL, ptrhash, ptrcmp);
+	return newptr;
+}
+static inline void dummy_test_free(void *mem, size_t amount, void *ctx)
+{
+	size_t *ptr = rudp_hashmap_at(dummy_map, mem, ptrhash, ptrcmp);
+	assert(ptr != NULL);
+	assert(*ptr == amount);
+	free(mem);
+}
+
+static struct rudp_allocator dummy_test_alloc_val = {
+	.alloc = dummy_test_allocfn,
+	.free = dummy_test_free,
+	.realloc = NULL,
+	.ctx = NULL,
+};
+
+struct rudp_allocator *dummy_test_alloc = &dummy_test_alloc_val;
