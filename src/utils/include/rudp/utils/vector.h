@@ -37,7 +37,7 @@ struct {\
 // ALLOCATOR_PTR is a pointer to a rudp_allocator struct. It may be NULL.
 // ALLOCATOR_PTR must be the same allocator previously used on the vector.
 #define rudp_vector_delete(VEC, ALLOCATOR_PTR)\
-	(rudp_allocator_free((VEC).data, (VEC).bufsize, (ALLOCATOR_PTR)))
+	(rudp_allocator_free((VEC).data, sizeof(*(VEC).data) * (VEC).bufsize, (ALLOCATOR_PTR)))
 	
 // Gets the number of elements in a rudp_vector.
 // VEC must be the name of a rudp_vector previously initialized by rudp_vector_new.

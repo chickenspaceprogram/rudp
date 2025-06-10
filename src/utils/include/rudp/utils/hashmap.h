@@ -30,7 +30,7 @@
 	}
 // god i love the comma operator
 #define rudp_hashmap_new(MAP, ALLOCATOR) (\
-	(MAP).array = rudp_allocator_alloc(sizeof(*(MAP).array) * (RUDP_HASHMAP_INITSIZE), (ALLOCATOR)),\
+	(MAP).array = rudp_allocator_alloc(sizeof(*((MAP).array)) * (RUDP_HASHMAP_INITSIZE), (ALLOCATOR)),\
 	memset((MAP).array, 0, sizeof(*(MAP).array) * (RUDP_HASHMAP_INITSIZE)),\
 	(MAP).bufsize = 16,\
 	(MAP).nel = 0,\
@@ -38,7 +38,7 @@
 )
 
 #define rudp_hashmap_delete(MAP, ALLOCATOR) do {\
-	rudp_allocator_free((MAP).array, (MAP).bufsize, (ALLOCATOR));\
+	rudp_allocator_free((MAP).array, (MAP).bufsize * sizeof((*((MAP).array))), (ALLOCATOR));\
 } while (0)
 
 #define rudp_hashmap_at(MAP, KEY, HASHFN, CMPFN) ({\
@@ -80,13 +80,13 @@
 
 #define rudp_hashmap_reserve(MAP, SPACEAMT, ALLOC, HASHFN) (((MAP).nel < ((RUDP_HASHMAP_MAXLOADFACTOR) * (MAP).bufsize)) ? 0 : ({\
 	int RUDP_HASHMAP_RESERVE_RETVAL_INTERNAL_ = 0;\
-	typeof((MAP).array) RUDP_HASHMAP_RESERVE_NEWARR_INTERNAL_ = rudp_allocator_alloc((MAP).bufsize * 2, (ALLOC));\
+	typeof((MAP).array) RUDP_HASHMAP_RESERVE_NEWARR_INTERNAL_ = rudp_allocator_alloc((MAP).bufsize * 2 * sizeof((*((MAP).array))), (ALLOC));\
 	typeof((MAP).array) RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_ = (MAP).array;\
 	if (RUDP_HASHMAP_RESERVE_NEWARR_INTERNAL_ == NULL) {\
 		RUDP_HASHMAP_RESERVE_RETVAL_INTERNAL_ = -1;\
 	}\
 	else {\
-		memset(RUDP_HASHMAP_RESERVE_NEWARR_INTERNAL_, 0, ((MAP).bufsize * 2));\
+		memset(RUDP_HASHMAP_RESERVE_NEWARR_INTERNAL_, 0, ((MAP).bufsize * 2 * sizeof((*((MAP).array)))));\
 		(MAP).array = RUDP_HASHMAP_RESERVE_NEWARR_INTERNAL_;\
 		(MAP).bufsize *= 2;\
 		for (size_t RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_ = 0; RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_ < (MAP).bufsize / 2; ++RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_) {\
@@ -94,7 +94,7 @@
 				RUDP_HASHMAP_INSERT_INTERNAL_(MAP, RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_[RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_].key, RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_[RUDP_HASHMAP_RESERVE_INDEX_INTERNAL_].val, HASHFN, RUDP_HASHMAP_DUMMY_CMP_INTERNAL_);\
 			}\
 		}\
-		rudp_allocator_free(RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_, (MAP).bufsize / 2, (ALLOC));\
+		rudp_allocator_free(RUDP_HASHMAP_RESERVE_OLDARR_INTERNAL_, (MAP).bufsize * sizeof((*((MAP).array))) / 2, (ALLOC));\
 	}\
 	RUDP_HASHMAP_RESERVE_RETVAL_INTERNAL_;\
 }))
@@ -127,7 +127,7 @@
 
 // returns pointer to RUDP_HASHMAP_BUCKETTYPE
 #define rudp_hashmap_iter_next(ITER) ({\
-	while (!((ITER).map_ptr->array[(ITER).index].is_filled) && (ITER).index < (ITER).map_ptr->bufsize)\
+	while ((ITER).index < (ITER).map_ptr->bufsize && !((ITER).map_ptr->array[(ITER).index].is_filled))\
 		++((ITER).index);\
 	++((ITER).index);\
 	((ITER).index - 1 < (ITER).map_ptr->bufsize) ? (\
