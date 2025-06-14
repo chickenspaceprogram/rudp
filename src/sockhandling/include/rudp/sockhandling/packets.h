@@ -42,22 +42,11 @@ rudp_packet_header_size(
 	return pkt->data_offset;
 }
 
-static inline int
+int
 rudp_packet_header_serialize(
 	uint8_t *outbuf,
 	const struct rudp_packet_header_generic *pkt
-) 
-{
-	if (pkt->version != 0x01) {
-		return -1;
-	}
-	outbuf[0] = pkt->version;
-	outbuf[1] = pkt->data_offset;
-	const struct rudp_packet_header_v1 *pkt_v1 = (const struct rudp_packet_header_v1 *)pkt;
-	outbuf[2] = pkt_v1->flags;
-	outbuf[3] = pkt_v1->reserved_space;
-	return 0;
-}
+);
 
 static inline void 
 rudp_packet_header_v1_syn_new(

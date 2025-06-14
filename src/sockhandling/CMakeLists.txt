@@ -9,6 +9,7 @@ add_library(rudp_sockhandling
 	include/rudp/sockhandling/uid_gen.h
 	include/rudp/sockhandling/packets.h
 	include/rudp/sockhandling/poll.h
+	include/rudp/sockhandling/connstate.h
 	packets.c
 )
 
