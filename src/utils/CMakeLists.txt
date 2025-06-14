@@ -12,6 +12,7 @@ add_library(rudp_utils
 	include/rudp/utils/alloc.h
 	include/rudp/utils/minheap.h
 	include/rudp/utils/rc.h
+	include/rudp/utils/deque.h
 )
 
 target_include_directories(rudp_utils PUBLIC include)
