@@ -7,6 +7,9 @@ cmake_minimum_required(VERSION 3.14)
 add_library(rudp_sockhandling
 	include/rudp/sockhandling/timespec_manip.h
 	include/rudp/sockhandling/uid_gen.h
+	include/rudp/sockhandling/packets.h
+	include/rudp/sockhandling/poll.h
+	packets.c
 )
 
 target_include_directories(rudp_sockhandling PUBLIC include)
