@@ -21,9 +21,9 @@
 #define RUDP_HASHMAP_TYPE(KEYTYPE, VALTYPE)\
 	struct {\
 		struct {\
+			bool is_filled;\
 			KEYTYPE key;\
 			VALTYPE val;\
-			bool is_filled;\
 		} *array;\
 		size_t bufsize;\
 		size_t nel;\
