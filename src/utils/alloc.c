@@ -127,7 +127,7 @@ static inline void *dummy_test_allocfn(size_t amount, void *ctx)
 	void *newptr = malloc(amount);
 	if (newptr == NULL)
 		return NULL;
-	rudp_hashmap_insert(dummy_map, newptr, amount, NULL, ptrhash, ptrcmp);
+	assert(rudp_hashmap_insert(dummy_map, newptr, amount, NULL, ptrhash, ptrcmp) == 0);
 	return newptr;
 }
 static inline void dummy_test_free(void *mem, size_t amount, void *ctx)

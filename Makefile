@@ -39,7 +39,7 @@ asan: wipe
 	cmake --build $(BUILD_DIR) $(THREADS)
 
 test: make
-	ctest --test-dir $(BUILD_DIR) $(THREADS)
+	ctest --test-dir $(BUILD_DIR) --output-on-failure $(THREADS)
 
 memcheck: make
 	ctest --test-dir $(BUILD_DIR) -T memcheck $(THREADS)
