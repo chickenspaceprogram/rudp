@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 cmake_minimum_required(VERSION 3.14)
+add_subdirectory(tests)
 
 add_library(rudp_sockhandling
 	include/rudp/sockhandling/timespec_manip.h

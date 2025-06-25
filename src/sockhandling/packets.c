@@ -13,31 +13,21 @@ static const uint8_t RUDP_SYN = 0x80;
 static const uint8_t RUDP_ACK = 0x40;
 static const uint8_t RUDP_FIN = 0x20;
 static const uint8_t RUDP_RST = 0x10;
-static const size_t ALLOCA_LIMIT = 128;
 
 
 static void serialize_u16(uint8_t *buf, size_t *i, uint16_t n)
 {
-	buf[(*i)++] = (n & 0xFF00) >> 2;
+	buf[(*i)++] = (n & 0xFF00) >> 8;
 	buf[(*i)++] = n & 0xFF;
 }
 
 static void serialize_u32(uint8_t *buf, size_t *i, uint16_t n)
 {
-	buf[(*i)++] = (n & 0xFF000000) >> 6;
-	buf[(*i)++] = (n & 0xFF0000) >> 4;
-	buf[(*i)++] = (n & 0xFF00) >> 2;
+	buf[(*i)++] = (n & 0xFF000000) >> 24;
+	buf[(*i)++] = (n & 0xFF0000) >> 16;
+	buf[(*i)++] = (n & 0xFF00) >> 8;
 	buf[(*i)++] = n & 0xFF;
 }
-static size_t get_iov_size(const struct rudp_data *data)
-{
-	size_t total = 0;
-	for (size_t i = 0; i < data->niov; ++i) {
-		total += data->iov[i].iov_len;
-	}
-	return total;
-}
-
 static void rudp_serialize_header(uint8_t *hdrbuf, const struct rudp_packet *pkt)
 {
 	int sum = pkt->syn + pkt->rst + pkt->fin;
@@ -56,7 +46,7 @@ static void rudp_serialize_header(uint8_t *hdrbuf, const struct rudp_packet *pkt
 	size_t i = 0;
 	hdrbuf[i++] = flags;
 	hdrbuf[i++] = 0x10 | hdrlen;
-	serialize_u16(hdrbuf, &i, get_iov_size(&(pkt->data)));
+	serialize_u16(hdrbuf, &i, pkt->datalen);
 	serialize_u32(hdrbuf, &i, pkt->seq_no);
 	if (pkt->syn) {
 		serialize_u16(hdrbuf, &i, pkt->max_winsize);
