@@ -3,6 +3,10 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 cmake_minimum_required(VERSION 3.14)
-add_subdirectory(sockhandling)
-add_subdirectory(utils)
-add_subdirectory(icmp)
+
+add_library(rudp_icmp
+)
+
+target_include_directories(rudp_icmp PUBLIC include)
+
+add_subdirectory(tests)
