@@ -11,34 +11,32 @@ struct rudp_addr {
 	socklen_t addrlen;
 };
 
-struct rudp_packet {
-	void *data;
-	uint16_t datalen;
-	uint32_t seq_no;
-
-
-	bool syn:1;
-	uint16_t max_winsize;
-	uint16_t max_segsize;
-
-	bool ack:1;
-	uint32_t ack_no;
-
-	bool rst:1;
-	bool fin:1;
+struct rudp_packet_header {
+	uint32_t magic;
+	uint32_t fst_seq_no;
+	uint32_t fst_ack_no;
 };
 
-int32_t 
-rudp_packet_recv(
-	int fd, 
-	struct rudp_packet *hdr, 
-	struct rudp_addr *addr,
-	struct rudp_allocator *alloc
-);
-int 
-rudp_packet_send(
-	int fd, 
-	const struct rudp_packet *hdr, 
-	struct rudp_addr *addr,
-	struct rudp_allocator *alloc
-);
+static const uint8_t RUDP_SYN = 1;
+static const uint8_t RUDP_DATA = 2;
+static const uint8_t RUDP_FIN = 3;
+static const uint8_t RUDP_RST = 4;
+
+struct rudp_packet_chunk_header {
+	uint8_t type;
+	uint8_t pktflags;
+	uint16_t datalen;
+};
+
+struct rudp_packet_chunk_syn {
+	uint16_t mss;
+	uint16_t max_outstanding_pkts;
+	bool ack:1;
+};
+
+struct rudp_packet_chunk_data {
+	uint16_t datalen;
+	uint8_t subindex;
+	bool frag:1;
+};
+

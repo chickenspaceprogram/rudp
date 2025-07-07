@@ -49,6 +49,4 @@ static void makeack(uint8_t *outbuf, uint32_t ack_no)
 
 int main(void)
 {
-	struct sockaddr_un addr = {
-	};
 }
